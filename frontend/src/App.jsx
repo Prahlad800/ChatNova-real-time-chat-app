@@ -12,7 +12,7 @@ function App() {
     return () => socket.disconnect();
   }, []);
 
-  return <h2>Live Chat</h2>;
+  return <h2 className="bg-sky-950">Live Chat</h2>;
 }
 
 export default App;

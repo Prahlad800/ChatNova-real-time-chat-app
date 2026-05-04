@@ -2,8 +2,12 @@ import app from "./src/app/app.js";
 import { createServer } from "node:http";
 import { Server } from "socket.io";
 import setupSocket from "./src/app/socket.js";
+import {connectDB} from "./src/db/db.js"
+import dotenv from "dotenv"
 
+dotenv.config()
 const port = 2020;
+connectDB()
 
 // express → http server
 const httpServer = createServer(app);
