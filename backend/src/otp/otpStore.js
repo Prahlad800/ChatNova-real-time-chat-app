@@ -1,6 +1,7 @@
 const otpStore = new Map()
 
 export const saveOTP = (email, otp) => {
+     
    const finalData = {
         ...otp,
         expires: Date.now() + 10 * 60 * 1000
@@ -11,9 +12,14 @@ export const saveOTP = (email, otp) => {
     return finalData;
 }
 
-export const getOTPData = (email) => otpStore.get(email);
+export const getOTPData = (email) => {
+  
+  return otpStore.get(email); 
+};
 
-export const deleteOTP = (email) => otpStore.delete(email);
+export const deleteOTP = (email) => {
+  return otpStore.delete(email);
+};
 
 // export const verifyOTP = (email, otp) => {
 //     const data = otpStore.get(email)
