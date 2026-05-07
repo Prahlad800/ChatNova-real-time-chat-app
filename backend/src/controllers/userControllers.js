@@ -1,5 +1,5 @@
 import { User } from "../model/userModel.js";
-import { saveOTP, getOTPData, deleteOTP } from "../otp/otpStore.js";
+import { saveOTP, getOTPData, deleteOTP, increaseAttempt } from "../otp/otpStore.js";
 import { sendEmailOTP } from "../otp/mailer.js";
 import bcrypt from "bcrypt"
 import bodyParser from "body-parser";
@@ -88,10 +88,27 @@ export const verifyOTP = async (req, res) => {
             deleteOTP(email);
             return res.status(400).json({ message: "OTP expired" });
         }
+        if (data.attempts >= 4) {
+
+            deleteOTP(email);
+
+            return res.status(400).json({
+                success: false,
+                message: "Too many wrong attempts"
+            });
+        }
+
 
         if (data.otp !== otp) {
-            return res.status(400).json({ message: "Invalid OTP" });
+
+             const attempts = increaseAttempt(email);
+
+            return res.status(400).json({
+                success: false,
+                message: `Invalid OTP. Attempts ${attempts}/5`
+            });
         }
+
 
 
         const jwtTokem = jwt.sign(
@@ -156,10 +173,10 @@ export const login = async (req, res) => {
                     success: false
                 })
         }
-         const checkPassword= await bcrypt.compare(password, check_user.password); 
-       if(!checkPassword){
-        return res.status(400).json({ message: "invalid password" });
-       }
+        const checkPassword = await bcrypt.compare(password, check_user.password);
+        if (!checkPassword) {
+            return res.status(400).json({ message: "invalid password" });
+        }
 
         const generateOTP = (length = 6) => {
             let otp = "";
@@ -171,14 +188,14 @@ export const login = async (req, res) => {
 
         const otp = generateOTP(6);
 
-        
+
         const dataSave = saveOTP(email, {
             otp,
             email,
-           
-             name: check_user.name,
-           
-            DOB: check_user.DOB, 
+
+            name: check_user.name,
+
+            DOB: check_user.DOB,
             gender: check_user.gender
 
 
@@ -216,7 +233,7 @@ export const verifyOTP_login = async (req, res) => {
         let { email, otp } = req.body
         email = email.trim().toLowerCase();
         const data = await getOTPData(email)
-      
+
 
         if (!data) {
             return res.status(400).json({ message: "OTP expired or not found" });
@@ -227,10 +244,26 @@ export const verifyOTP_login = async (req, res) => {
             return res.status(400).json({ message: "OTP expired" });
         }
 
-        if (data.otp !== otp) {
-            return res.status(400).json({ message: "Invalid OTP" });
+         if (data.attempts >= 5) {
+
+            deleteOTP(email);
+
+            return res.status(400).json({
+                success: false,
+                message: "Too many wrong attempts"
+            });
         }
 
+
+        if (data.otp !== otp) {
+
+             const attempts = increaseAttempt(email);
+
+            return res.status(400).json({
+                success: false,
+                message: `Invalid OTP. Attempts ${attempts}/5`
+            });
+        }
 
         const jwtTokem = jwt.sign(
             {
@@ -245,10 +278,10 @@ export const verifyOTP_login = async (req, res) => {
             maxAge: 6 * 60 * 60 * 1000
         })
 
-       
 
 
-       await deleteOTP(email);
+
+        await deleteOTP(email);
 
         res.json({
             success: true,
@@ -256,7 +289,7 @@ export const verifyOTP_login = async (req, res) => {
             jwtTokem,
             name: data.name,
             email: data.email,
-            
+
             DOB: data.DOB,
             gender: data.gender
         });

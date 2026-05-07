@@ -6,7 +6,7 @@ import {connectDB} from "./src/db/db.js"
 import dotenv from "dotenv"
 
 dotenv.config()
-const port = 2020;
+const port = process.env.PORT;
 connectDB()
 
 // express → http server

@@ -4,6 +4,7 @@ export const saveOTP = (email, otp) => {
      
    const finalData = {
         ...otp,
+        attempts: 0,
         expires: Date.now() + 10 * 60 * 1000
     };
 
@@ -17,16 +18,21 @@ export const getOTPData = (email) => {
   return otpStore.get(email); 
 };
 
+export const increaseAttempt = (email) => {
+
+    const data = otpStore.get(email);
+
+    if (!data) return null;
+
+    data.attempts = data.attempts + 1;
+
+    otpStore.set(email, data);
+
+    return data.attempts;
+};
+
 export const deleteOTP = (email) => {
   return otpStore.delete(email);
 };
 
-// export const verifyOTP = (email, otp) => {
-//     const data = otpStore.get(email)
-//     if (!data) return false;
-//     if (data.expires < Date.now()) return false;
-//     if (data.otp !== otp) return false;
 
-//     otpStore.delete(email);
-//     return true;
-// }
