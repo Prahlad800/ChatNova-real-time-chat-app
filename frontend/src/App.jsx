@@ -1,18 +1,10 @@
 import { useEffect } from "react";
-import io from "socket.io-client";
+import Waves from "./backgrount/Waves";
+
 
 function App() {
-  useEffect(() => {
-    const socket = io("http://localhost:2020");
-
-    socket.on("connect", () => {
-      console.log("Connected:", socket.id);
-    });
-
-    return () => socket.disconnect();
-  }, []);
-
-  return <h2 className="bg-sky-950">Live Chat</h2>;
+     
+    
 }
 
 export default App;

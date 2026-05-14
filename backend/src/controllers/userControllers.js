@@ -302,3 +302,172 @@ export const verifyOTP_login = async (req, res) => {
             })
     }
 }
+
+
+export const password_updata = async(req,res)=>{
+    try{
+
+    
+    let {email}=req.body
+     email = email.trim().toLowerCase();
+    if(!email){
+        res.status(500)
+        .json({
+            message:"email requed",
+            success:false
+        })
+    }
+
+    const user_check = await User.findOne({email})
+
+    if(!user_check){
+        res.status(201)
+        .json({
+            message:"user not found ",
+            success:false
+
+        })
+    }
+
+    const generateOTP = (length = 6) => {
+            let otp = "";
+            for (let i = 0; i < length; i++) {
+                otp += Math.floor(Math.random() * 10);
+            }
+            return otp;
+        };
+
+        const otp = await generateOTP(6);
+
+        res.json({
+            success: true,
+            message: "send OTP",
+            otp,
+            email,
+
+           
+        });
+        }catch (errer) {
+        res.status(500)
+            .json({
+                message: `password updata errer ${errer}`,
+                success: false
+            })
+    }
+
+
+
+}
+export const password_OTP_verify= async(req,res)=>{
+    try {
+        let { email, otp } = req.body
+        email = email.trim().toLowerCase();
+        const data = await getOTPData(email)
+
+
+        if (!data) {
+            return res.status(400).json({ message: "OTP expired or not found" });
+        }
+
+        if (data.expires < Date.now()) {
+            deleteOTP(email);
+            return res.status(400).json({ message: "OTP expired" });
+        }
+
+         if (data.attempts >= 5) {
+
+            deleteOTP(email);
+
+            return res.status(400).json({
+                success: false,
+                message: "Too many wrong attempts"
+            });
+        }
+
+
+        if (data.otp !== otp) {
+
+             const attempts = increaseAttempt(email);
+
+            return res.status(400).json({
+                success: false,
+                message: `Invalid OTP. Attempts ${attempts}/5`
+            });
+        }
+
+        // const jwtTokem = jwt.sign(
+        //     {
+        //         email: data.email
+        //     },
+        //     process.env.JWT_KEY,
+        //     { expiresIn: '6h' }
+        // )
+        // res.cookie("token", jwtTokem, {
+        //     httpOnly: true,
+        //     secure: false, // production me true
+        //     maxAge: 6 * 60 * 60 * 1000
+        // })
+
+
+
+
+        await deleteOTP(email);
+
+        res.json({
+            success: true,
+            message: "OTP Varify successfully",
+            // jwtTokem,
+            // name: data.name,
+            // email: data.email,
+
+            // DOB: data.DOB,
+            // gender: data.gender
+        });
+
+    }catch (errer) {
+        res.status(500)
+            .json({
+                message: `OTP varify errer for password updata ${errer}`,
+                success: false
+            })}
+
+}
+
+export const new_password =async(req,res)=>{
+        try{
+            const {email,newPassword} =body.req
+            if(!newPassword){
+                res.status(500)
+                .json({
+                    message:"New password requed",
+                    success:false
+                })
+            }
+            const newP=await User.findOne({email})
+
+            if(!newP){
+                res.status(500)
+                .json({
+                    message:"user not foud",
+                    success:false
+                })
+            }
+
+            const newPassHash=  bcrypt.hash(newPassword,10)
+
+            await save()
+
+            res.status(200)
+            .json({
+                message: "Password updated successfully",
+            success: true
+            })
+
+
+        }catch (errer) {
+        res.status(500)
+            .json({
+                message: `signup errer ${errer}`,
+                success: false
+            })}
+}
