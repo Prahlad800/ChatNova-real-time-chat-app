@@ -13,7 +13,7 @@ app.get("/", (req, res) => {
   res.send("API running...");
 
 });
-app.use("/",userRouter)
+app.use("/user",userRouter)
 
 
 export default app;

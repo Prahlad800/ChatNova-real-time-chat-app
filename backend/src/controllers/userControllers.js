@@ -101,7 +101,7 @@ export const verifyOTP = async (req, res) => {
 
         if (data.otp !== otp) {
 
-             const attempts = increaseAttempt(email);
+            const attempts = increaseAttempt(email);
 
             return res.status(400).json({
                 success: false,
@@ -244,7 +244,7 @@ export const verifyOTP_login = async (req, res) => {
             return res.status(400).json({ message: "OTP expired" });
         }
 
-         if (data.attempts >= 5) {
+        if (data.attempts >= 5) {
 
             deleteOTP(email);
 
@@ -257,7 +257,7 @@ export const verifyOTP_login = async (req, res) => {
 
         if (data.otp !== otp) {
 
-             const attempts = increaseAttempt(email);
+            const attempts = increaseAttempt(email);
 
             return res.status(400).json({
                 success: false,
@@ -304,32 +304,32 @@ export const verifyOTP_login = async (req, res) => {
 }
 
 
-export const password_updata = async(req,res)=>{
-    try{
+export const password_updata = async (req, res) => {
+    try {
 
-    
-    let {email}=req.body
-     email = email.trim().toLowerCase();
-    if(!email){
-        res.status(500)
-        .json({
-            message:"email requed",
-            success:false
-        })
-    }
 
-    const user_check = await User.findOne({email})
+        let { email } = req.body
+        email = email.trim().toLowerCase();
+        if (!email) {
+            res.status(500)
+                .json({
+                    message: "email requed",
+                    success: false
+                })
+        }
 
-    if(!user_check){
-        res.status(201)
-        .json({
-            message:"user not found ",
-            success:false
+        const user_check = await User.findOne({ email })
 
-        })
-    }
+        if (!user_check) {
+            res.status(201)
+                .json({
+                    message: "user not found ",
+                    success: false
 
-    const generateOTP = (length = 6) => {
+                })
+        }
+
+        const generateOTP = (length = 6) => {
             let otp = "";
             for (let i = 0; i < length; i++) {
                 otp += Math.floor(Math.random() * 10);
@@ -338,16 +338,22 @@ export const password_updata = async(req,res)=>{
         };
 
         const otp = await generateOTP(6);
+        const dataSave = saveOTP(email, {
+            otp,
+
+            email,
+
+        });
+
 
         res.json({
             success: true,
             message: "send OTP",
-            otp,
-            email,
+            dataSave,
 
-           
+
         });
-        }catch (errer) {
+    } catch (errer) {
         res.status(500)
             .json({
                 message: `password updata errer ${errer}`,
@@ -358,10 +364,11 @@ export const password_updata = async(req,res)=>{
 
 
 }
-export const password_OTP_verify= async(req,res)=>{
+export const password_OTP_verify = async (req, res) => {
     try {
         let { email, otp } = req.body
         email = email.trim().toLowerCase();
+
         const data = await getOTPData(email)
 
 
@@ -374,7 +381,7 @@ export const password_OTP_verify= async(req,res)=>{
             return res.status(400).json({ message: "OTP expired" });
         }
 
-         if (data.attempts >= 5) {
+        if (data.attempts >= 5) {
 
             deleteOTP(email);
 
@@ -387,7 +394,7 @@ export const password_OTP_verify= async(req,res)=>{
 
         if (data.otp !== otp) {
 
-             const attempts = increaseAttempt(email);
+            const attempts = increaseAttempt(email);
 
             return res.status(400).json({
                 success: false,
@@ -424,50 +431,122 @@ export const password_OTP_verify= async(req,res)=>{
             // gender: data.gender
         });
 
-    }catch (errer) {
+    } catch (errer) {
         res.status(500)
             .json({
                 message: `OTP varify errer for password updata ${errer}`,
                 success: false
-            })}
+            })
+    }
 
 }
 
-export const new_password =async(req,res)=>{
-        try{
-            const {email,newPassword} =body.req
-            if(!newPassword){
-                res.status(500)
-                .json({
-                    message:"New password requed",
-                    success:false
-                })
-            }
-            const newP=await User.findOne({email})
 
-            if(!newP){
-                res.status(500)
-                .json({
-                    message:"user not foud",
-                    success:false
-                })
-            }
-
-            const newPassHash=  bcrypt.hash(newPassword,10)
-
-            await save()
-
-            res.status(200)
-            .json({
-                message: "Password updated successfully",
-            success: true
-            })
-
-
-        }catch (errer) {
-        res.status(500)
-            .json({
-                message: `signup errer ${errer}`,
+export const new_password = async (req, res) => {
+    try {
+        let  { email, newPassword } = req.body;
+            email=email.trim().toLowerCase();
+        if (!newPassword) {
+            return res.status(400).json({
+                message: "New password required",
                 success: false
-            })}
+            });
+        }
+
+        const newP = await User.findOne({ email });
+     
+
+        if (!newP) {
+            return res.status(404).json({
+                message: "User not found",
+                success: false
+            });
+        }
+
+        // hash password
+        const newPassHash = await bcrypt.hash(newPassword, 10);
+
+        // update password
+        newP.password = newPassHash;
+
+        // save in database
+        await newP.save();
+
+        res.status(200).json({
+            message: "Password updated successfully",
+            success: true,
+            email: newP.email,
+           
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            message: `Password update error ${error}`,
+            success: false
+        });
+    }
+};
+
+export const cheng_password=  async (req,res)=>{
+    try{
+        let  { email, newPassword , oldPassword } = req.body;
+            email=email.trim().toLowerCase();
+        if (!oldPassword || !newPassword) {
+            return res.status(400).json({
+                message: "All fild required",
+                success: false
+            });
+        }
+        if (!oldPassword) {
+            return res.status(400).json({
+                message: "Old password required",
+                success: false
+            });
+        }
+        if (!newPassword) {
+            return res.status(400).json({
+                message: "New password required",
+                success: false
+            });
+        }
+
+        const newP = await User.findOne({ email });
+       
+
+        if (!newP) {
+            return res.status(404).json({
+                message: "User not found",
+                success: false
+            });
+        }
+
+        const checkPassword = await bcrypt.compare(oldPassword, newP.password);
+         if (!checkPassword) {
+            return res.status(400).json({ message: "invalid password" });
+        }
+        
+
+        // hash password
+        const newPassHash = await bcrypt.hash(newPassword, 10);
+
+        // update password
+        newP.password = newPassHash;
+
+        // save in database
+        await newP.save();
+
+        res.status(200).json({
+            message: "Password updated successfully",
+            success: true,
+            email: newP.email,
+           
+        });
+
+
+    }catch (error) {
+        res.status(500).json({
+            message: `Password cheng error ${error}`,
+            success: false
+        })
+    }
 }
