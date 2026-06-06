@@ -240,23 +240,23 @@ function Signup() {
                 </span>
                 <div className="password-status">
 
-  <span className="password-strength-text">
+                  <span className="password-strength-text">
 
-    {isMatch ? (
-      <>
-        <span className="success-icon">&#10003;</span> {"  "}
-        Passwords Match
-      </>
-    ) : (
-      <>
-        <span className="error-icon">&#10007;</span> {"  "}
-        Passwords Don't Match
-      </>
-    )}
+                    {isMatch ? (
+                      <>
+                        <span className="success-icon">&#10003;</span> {"  "}
+                        Passwords Match
+                      </>
+                    ) : (
+                      <>
+                        <span className="error-icon">&#10007;</span> {"  "}
+                        Passwords Don't Match
+                      </>
+                    )}
 
-  </span>
+                  </span>
 
-</div>
+                </div>
               </div>
               <button type='submit' className='signup-btm' >Signup</button>
             </form>
